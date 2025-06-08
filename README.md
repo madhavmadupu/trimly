@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📚 Trimly AI — Smart Book & PDF Summarizer
 
-## Getting Started
+**Trimly AI** is a powerful Next.js application that compresses and summarizes books or PDF files based on the **time** you have and the **mood** you're in.
 
-First, run the development server:
+Powered by **open-source large language models (LLMs)**, Trimly AI delivers personalized, focused summaries that help you absorb information faster and smarter.
+
+---
+
+## ✨ Features
+
+- 🔍 **PDF & Book Upload** — Upload large files and extract meaningful content.
+- 🧠 **Smart Summarization** — Automatically summarizes content using open-source LLMs.
+- 🕐 **Time-Based Compression** — Choose how long you want to read (e.g., 5-min, 15-min summaries).
+- 😌 **Mood-Adaptive Style** — Summaries adapt to your mood (e.g., casual, focused, academic).
+- 📄 **PDF Export** — Download generated summaries as PDF files.
+- 💡 **Local LLM Integration** — Works with self-hosted or API-based open-source models like Mistral, LLaMA, or Gemma.
+
+---
+
+## 📦 Tech Stack
+
+- **Frontend**: Next.js App Router + Tailwind CSS
+- **Backend**: Server Actions + Edge API Routes
+- **PDF Parsing**: `pdf-parse`
+- **PDF Generation**: `pdfkit`
+- **LLMs**: Locally hosted models or via REST API (Ollama, LM Studio, etc.)
+
+---
+
+## 🚀 Getting Started
 
 ```bash
+git clone https://github.com/madhavmadupu/trimly.git
+cd trimly
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🧠 How It Works
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1.  **Upload a book/PDF**
+    
+2.  **Choose your time limit and mood**
+    
+3.  **Trimly AI** analyzes the content and generates a summary
+    
+4.  **Download or view** the output instantly
+    
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+___
 
-## Learn More
+## 🛠 API Routes
 
-To learn more about Next.js, take a look at the following resources:
+-   `POST /api/extract-text`: Extract raw text from uploaded PDF
+    
+-   `POST /api/generate-pdf`: Generate a downloadable summary PDF
+    
+-   `POST /api/summarize`: (Pluggable LLM-based route for summaries)
+    
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+___
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📌 Roadmap
 
-## Deploy on Vercel
+-    Support for EPUB and DOCX formats
+    
+-    Chrome extension for webpage summarization
+    
+-    Speech-to-text support for audiobooks
+    
+-    Offline summarization using WebAssembly LLMs
+    
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+___
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🧪 Demo
+
+Coming soon...
+
+___
+
+## 🤝 Contributing
+
+Pull requests welcome! If you're excited about AI, summarization, or building smart reading tools — join us.
+
+___
+
+## 📜 License
+
+MIT License — use freely, contribute openly.
+
+___
+
+## 🔗 Acknowledgements
+- [pdf-parse](https://www.npmjs.com/package/pdf-parse)
+    
+-   [pdfkit](https://www.npmjs.com/package/pdfkit)
+    
+-   [Ollama](https://ollama.ai)
+    
+-   [Next.js](https://nextjs.org)

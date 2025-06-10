@@ -1,20 +1,38 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useRef } from "react"
+import React, { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload, FileText, Loader2, AlertCircle, Settings } from "lucide-react"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import {
+    Upload,
+    FileText,
+    Loader2,
+    AlertCircle,
+    Settings,
+} from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function PDFSummarizer() {
     const [file, setFile] = useState<File | null>(null)
     const [summary, setSummary] = useState("")
+    const [pdfDataUrl, setPdfDataUrl] = useState("")
+    const [pdfFilename, setPdfFilename] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
     const [mood, setMood] = useState("professional")
@@ -22,26 +40,26 @@ export function PDFSummarizer() {
     const [showParameters, setShowParameters] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = event.target.files?.[0]
-        if (selectedFile) {
-            if (selectedFile.type !== "application/pdf") {
-                setError("Please select a PDF file")
-                return
-            }
-            setFile(selectedFile)
-            setError("")
-            setSummary("")
-            setShowParameters(true) // Show parameters after file upload
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setError("")
+        setSummary("")
+        setPdfDataUrl("")
+        setPdfFilename("")
+        const f = e.target.files?.[0]
+        if (!f) return
+        if (f.type !== "application/pdf") {
+            setError("Please select a PDF file.")
+            return
         }
+        setFile(f)
+        setShowParameters(true)
     }
 
     const handleSummarize = async () => {
         if (!file) {
-            setError("Please select a PDF file first")
+            setError("Please select a PDF first.")
             return
         }
-
         setIsLoading(true)
         setError("")
 
@@ -51,20 +69,18 @@ export function PDFSummarizer() {
             formData.append("mood", mood)
             formData.append("availableTime", availableTime)
 
-            const response = await fetch("/api/summarize", {
+            const res = await fetch("/api/compress", {
                 method: "POST",
                 body: formData,
             })
+            const json = await res.json()
+            if (!res.ok) throw new Error(json.error || "Failed to summarize PDF")
 
-            const data = await response.json()
-
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to summarize PDF")
-            }
-
-            setSummary(data.summary)
+            setSummary(json.summary)
+            setPdfDataUrl(json.pdf)
+            setPdfFilename(json.filename)
         } catch (err) {
-            setError(err instanceof Error ? err.message : "An error occurred")
+            setError(err instanceof Error ? err.message : String(err))
         } finally {
             setIsLoading(false)
         }
@@ -73,13 +89,13 @@ export function PDFSummarizer() {
     const handleReset = () => {
         setFile(null)
         setSummary("")
+        setPdfDataUrl("")
+        setPdfFilename("")
         setError("")
         setShowParameters(false)
         setMood("professional")
         setAvailableTime("medium")
-        if (fileInputRef.current) {
-            fileInputRef.current.value = ""
-        }
+        if (fileInputRef.current) fileInputRef.current.value = ""
     }
 
     const moodOptions = [
@@ -88,7 +104,6 @@ export function PDFSummarizer() {
         { value: "academic", label: "Academic", description: "Scholarly with analytical depth" },
         { value: "creative", label: "Creative", description: "Engaging with storytelling elements" },
     ]
-
     const timeOptions = [
         { value: "quick", label: "Quick Read (2-3 min)", description: "Essential points only" },
         { value: "medium", label: "Medium Read (5-10 min)", description: "Balanced overview" },
@@ -162,11 +177,11 @@ export function PDFSummarizer() {
                                         <SelectValue placeholder="Select mood" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {moodOptions.map((option) => (
-                                            <SelectItem key={option.value} value={option.value}>
+                                        {moodOptions.map((opt) => (
+                                            <SelectItem key={opt.value} value={opt.value}>
                                                 <div className="flex flex-col">
-                                                    <span className="font-medium">{option.label}</span>
-                                                    <span className="text-xs text-muted-foreground">{option.description}</span>
+                                                    <span className="font-medium">{opt.label}</span>
+                                                    <span className="text-xs text-muted-foreground">{opt.description}</span>
                                                 </div>
                                             </SelectItem>
                                         ))}
@@ -181,11 +196,11 @@ export function PDFSummarizer() {
                                         <SelectValue placeholder="Select reading time" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {timeOptions.map((option) => (
-                                            <SelectItem key={option.value} value={option.value}>
+                                        {timeOptions.map((opt) => (
+                                            <SelectItem key={opt.value} value={opt.value}>
                                                 <div className="flex flex-col">
-                                                    <span className="font-medium">{option.label}</span>
-                                                    <span className="text-xs text-muted-foreground">{option.description}</span>
+                                                    <span className="font-medium">{opt.label}</span>
+                                                    <span className="text-xs text-muted-foreground">{opt.description}</span>
                                                 </div>
                                             </SelectItem>
                                         ))}
@@ -195,7 +210,11 @@ export function PDFSummarizer() {
                         </div>
 
                         <div className="flex gap-2">
-                            <Button onClick={handleSummarize} disabled={!file || isLoading} className="flex-1">
+                            <Button
+                                onClick={handleSummarize}
+                                disabled={!file || isLoading}
+                                className="flex-1"
+                            >
                                 {isLoading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -218,7 +237,8 @@ export function PDFSummarizer() {
                     <CardHeader>
                         <CardTitle>Your Personalized Summary</CardTitle>
                         <CardDescription>
-                            Generated with {moodOptions.find((m) => m.value === mood)?.label.toLowerCase()} tone •{" "}
+                            Generated with{" "}
+                            {moodOptions.find((m) => m.value === mood)?.label.toLowerCase()} tone •{" "}
                             {timeOptions.find((t) => t.value === availableTime)?.label.toLowerCase()}
                         </CardDescription>
                     </CardHeader>
@@ -234,8 +254,16 @@ export function PDFSummarizer() {
                                 Copy Summary
                             </Button>
                             <Button variant="outline" onClick={() => setShowParameters(true)}>
-                                Regenerate with Different Settings
+                                Regenerate
                             </Button>
+
+                            {pdfDataUrl && (
+                                <Button asChild>
+                                    <a href={pdfDataUrl} download={pdfFilename || "trimmed.pdf"}>
+                                        Download PDF
+                                    </a>
+                                </Button>
+                            )}
                         </div>
                     </CardContent>
                 </Card>

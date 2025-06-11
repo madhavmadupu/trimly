@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
         ${rawText}
         `.trim();
-        
+
         let summary: string
         const ollamaRes = await fetch(
             "http://127.0.0.1:11434/models/your-model/completions",
@@ -110,31 +110,45 @@ export async function POST(req: NextRequest) {
             throw new Error("Received empty summary from OpenAI")
         }
         */
+
+        let clean = summary
+            .replace(/-\s*\r?\n\s*/g, "")
+            .replace(/\r\n/g, "\n");
+
+        const paras = clean.split(/\n{2,}/)
+
         const pdfDoc = await PDFDocument.create()
         const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
         const fontSize = 12
         const lineHeight = fontSize * 1.5
-        const pageMargin = 50
+        const margin = 50
 
         let page = pdfDoc.addPage()
         let { width, height } = page.getSize()
-        let y = height - pageMargin
-        const maxWidth = width - 2 * pageMargin
+        let cursorY = height - margin
+        const maxWidth = width - margin * 2
 
-        for (const line of splitLines(summary, font, fontSize, maxWidth)) {
-            if (y < pageMargin + lineHeight) {
-                page = pdfDoc.addPage()
-                    ; ({ width, height } = page.getSize())
-                y = height - pageMargin
+        for (const para of paras) {
+            const text = para.replace(/\n+/g, " ").trim()
+            const lines = splitLines(text, font, fontSize, maxWidth)
+
+            for (const line of lines) {
+                if (cursorY < margin + lineHeight) {
+                    page = pdfDoc.addPage()
+                        ; ({ width, height } = page.getSize())
+                    cursorY = height - margin
+                }
+                page.drawText(line, {
+                    x: margin,
+                    y: cursorY,
+                    size: fontSize,
+                    font,
+                    color: rgb(0, 0, 0),
+                })
+                cursorY -= lineHeight
             }
-            page.drawText(line, {
-                x: pageMargin,
-                y,
-                size: fontSize,
-                font,
-                color: rgb(0, 0, 0),
-            })
-            y -= lineHeight
+
+            cursorY -= lineHeight
         }
 
         const pdfBytes = await pdfDoc.save()
